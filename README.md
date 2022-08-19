@@ -1,11 +1,16 @@
 # todo-list-golang
 
-To get todos, run: 
+To GET todos, run: 
 ```
 curl localhost:8080/todos
 ```
 
-To post a todo, run: 
+Or to GET a single todo, run: 
+```
+curl localhost:8080/todos/1
+```
+
+To POST a todo, run: 
 
 ```
 curl http://localhost:8080/todos \
@@ -14,6 +19,8 @@ curl http://localhost:8080/todos \
     --request "POST" \
     --data '{"id": 4,"name": "A new TODO","description": "Some more details about TODO","isComplete": false}'
 ```
+
+To PUT a todo, run: 
 
 ```
 curl http://localhost:8080/todos/1 \
