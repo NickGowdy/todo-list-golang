@@ -13,7 +13,7 @@ func main() {
 	router.GET("/todos", get)
 	router.GET("/todos/:id", getById)
 	router.POST("/todos", post)
-	router.Run("localhost:8080")
+	router.Run()
 }
 
 func get(c *gin.Context) {

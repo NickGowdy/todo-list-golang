@@ -3,6 +3,9 @@ FROM golang:alpine3.16
 # Install git.
 RUN apk update && apk add --no-cache git && apk add --no-cach bash && apk add build-base
 
+ENV GIN_MODE=release
+ENV PORT=8080
+
 # Setup folders
 RUN mkdir /app
 WORKDIR /app
@@ -21,7 +24,7 @@ RUN go install -v ./...
 RUN go build -o /build
 
 # Expose port 8080 to the outside world
-EXPOSE 8080
+EXPOSE ${PORT}
 
 # Run the executable
-CMD [ "/build" ]
+CMD [ "go", "run", "." ]
