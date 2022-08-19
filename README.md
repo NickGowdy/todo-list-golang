@@ -14,3 +14,11 @@ curl http://localhost:8080/todos \
     --request "POST" \
     --data '{"id": 4,"name": "A new TODO","description": "Some more details about TODO","isComplete": false}'
 ```
+
+```
+curl http://localhost:8080/todos/1 \
+    --include \
+    --header "Content-Type: application/json" \
+    --request "PUT" \
+    --data '{"name": "A new TODO","description": "Some more details about TODO","isComplete": true}'
+```
