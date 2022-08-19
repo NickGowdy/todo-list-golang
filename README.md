@@ -29,3 +29,12 @@ curl http://localhost:8080/todos/1 \
     --request "PUT" \
     --data '{"name": "A new TODO","description": "Some more details about TODO","isComplete": true}'
 ```
+
+To delete a todo, run:
+
+```
+curl http://localhost:8080/todos/1 \
+    --include \
+    --header "Content-Type: application/json" \
+    --request "DELETE" \'
+```

@@ -14,6 +14,7 @@ func main() {
 	router.GET("/todos/:id", getById)
 	router.PUT("/todos/:id", put)
 	router.POST("/todos", post)
+	router.DELETE("/todos/:id", delete)
 	router.Run()
 }
 
@@ -72,4 +73,24 @@ func put(c *gin.Context) {
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
+}
+
+func delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+	}
+
+	todos := models.GetTodos()
+
+	for i, t := range todos {
+		if t.Id == id {
+			todos = append(todos[0:i], todos[i+1:]...)
+			i--
+			c.IndentedJSON(http.StatusOK, todos)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
 }
