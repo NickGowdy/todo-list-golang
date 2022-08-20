@@ -5,12 +5,33 @@ services:
       dockerfile: Dockerfile
       context: .
     container_name: todo-list-golang
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
     tty: true
     ports:
       - 8080:8080
     restart: on-failure
     volumes:
       - .:/app
+    networks:
+      - todo
+    depends_on:
+      - postgresdb
+
+  postgresdb:
+    image: postgres:latest
+    container_name: postgres_container
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    ports: 
+    - 1234:5432
     networks:
       - todo
 
