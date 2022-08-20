@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: todo-list-golang
+    tty: true
+    ports:
+      - 8080:8080
+    restart: on-failure
+    volumes:
+      - .:/app
+    networks:
+      - todo
+
+networks:
+  todo:
+    driver: bridge

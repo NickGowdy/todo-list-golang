@@ -84,13 +84,17 @@ func delete(c *gin.Context) {
 
 	todos := models.GetTodos()
 
-	for i, t := range todos {
-		if t.Id == id {
-			todos = append(todos[0:i], todos[i+1:]...)
-			i--
-			c.IndentedJSON(http.StatusOK, todos)
-			return
+	for i := len(todos) - 1; i >= 0; i-- {
+		if todos[i].Id == id {
+			todos = append(todos[:i], todos[i+1:]...)
 		}
 	}
-	c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+
+	c.IndentedJSON(http.StatusOK, todos)
+
+	// if len(todos) < length {
+	// 	c.IndentedJSON(http.StatusOK, todos)
+	// }
+
+	// c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
 }
