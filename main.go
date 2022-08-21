@@ -3,12 +3,15 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"todo-list-golang/migrations"
 	"todo-list-golang/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	migrations.SeedDatabase()
+
 	router := gin.Default()
 	router.GET("/todos", get)
 	router.GET("/todos/:id", getById)
