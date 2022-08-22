@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"todo-list-golang/db"
 	"todo-list-golang/models"
@@ -15,11 +14,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	dbUser, dbPassword, dbName :=
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB")
-	database, err := db.Initialize(dbUser, dbPassword, dbName)
+	database, err := db.Initialize()
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
