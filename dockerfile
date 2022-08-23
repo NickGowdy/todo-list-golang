@@ -17,9 +17,6 @@ COPY .env .
 # Download all the dependencies 
 RUN go get -d -v ./...
 
-# Download go migrate for migrations
-RUN go get -u -d github.com/golang-migrate/migrate
-
 # Install the package
 RUN go install -v ./...
 
