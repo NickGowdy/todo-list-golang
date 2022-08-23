@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
-	defer database.Conn.Close()
+	defer database.DB()
 
 	router := gin.Default()
 	router.GET("/todos", get)
@@ -76,9 +76,6 @@ func put(c *gin.Context) {
 	todos := models.GetTodos()
 	for _, t := range todos {
 		if t.Id == id {
-			t.Name = updatedTodo.Name
-			t.Description = updatedTodo.Description
-			t.IsComplete = updatedTodo.IsComplete
 			c.IndentedJSON(http.StatusOK, updatedTodo)
 			return
 		}

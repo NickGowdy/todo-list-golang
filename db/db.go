@@ -1,42 +1,34 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
+	"todo-list-golang/models"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var ErrNoMatch = fmt.Errorf("no matching record")
-
-type Database struct {
-	Conn *sql.DB
-}
-
-func Initialize() (Database, error) {
+func Initialize() (*gorm.DB, error) {
 
 	username, password, database, HOST, PORT :=
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
+		os.Getenv("DB_NAME"),
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT")
 
-	db := Database{}
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		HOST, PORT, username, password, database)
-	conn, err := sql.Open("postgres", dsn)
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		username, password, HOST, PORT, database)
+
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+
 	if err != nil {
-		return db, err
+		log.Fatalln(err)
 	}
 
-	db.Conn = conn
-	err = db.Conn.Ping()
-	if err != nil {
-		return db, err
-	}
-	log.Println("Database connection established")
-	return db, nil
+	db.Debug().AutoMigrate(&models.Todo{})
+
+	return db, err
 }

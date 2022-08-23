@@ -4,16 +4,16 @@ import "gorm.io/gorm"
 
 type Todo struct {
 	gorm.Model
-	Id          int    `gorm:"primaryKey"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	IsComplete  bool   `json:"isComplete"`
+	Id int `gorm:"primaryKey;autoIncrement" json:"id"`
+	//		Value      string `gorm:"type:varchar(255);" json:"value"`
+	//		IsComplete bool   `gorm:"type:bool;default:0" json:"isComplete"`
+	//	}
 }
 
 func GetTodos() []Todo {
 	todos := []Todo{
-		{Id: 1, Name: "Laundry", Description: "", IsComplete: false},
-		{Id: 2, Name: "Dog", Description: "walk the dog", IsComplete: false},
+		// {Id: 1, Value: "Laundry", IsComplete: false},
+		// {Id: 2, Value: "Dog", IsComplete: false},
 	}
 
 	return todos

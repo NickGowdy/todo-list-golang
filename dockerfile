@@ -26,8 +26,6 @@ RUN go install -v ./...
 # Build the Go app
 RUN go build -o /build
 
-
-
 # Expose port 8080 to the outside world
 EXPOSE ${PORT}
 
