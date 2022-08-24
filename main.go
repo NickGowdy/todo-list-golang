@@ -24,7 +24,7 @@ func main() {
 	router.GET("/todos/:id", getById)
 	router.PUT("/todos/:id", put)
 	router.POST("/todos", post)
-	// router.DELETE("/todos/:id", delete)
+	router.DELETE("/todos/:id", delete)
 	router.Run()
 }
 
@@ -97,20 +97,18 @@ func put(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": updatedTodo})
 }
 
-// func delete(c *gin.Context) {
-// 	id, err := strconv.Atoi(c.Param("id"))
+func delete(c *gin.Context) {
+	db, err := db.Initialize()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
 
-// 	if err != nil {
-// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
-// 	}
+	var todo models.Todo
+	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
 
-// 	todos := models.GetTodos()
-
-// 	for i := len(todos) - 1; i >= 0; i-- {
-// 		if todos[i].Id == id {
-// 			todos = append(todos[:i], todos[i+1:]...)
-// 		}
-// 	}
-
-// 	c.IndentedJSON(http.StatusOK, todos)
-// }
+	db.Delete(todo)
+	c.JSON(http.StatusOK, gin.H{"data": true})
+}
