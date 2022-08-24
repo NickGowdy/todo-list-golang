@@ -33,9 +33,10 @@ func get(c *gin.Context) {
 	if err != nil {
 		log.Fatalf("Could not connect to database: %v", err)
 	}
+	var todos []models.Todo
+	db.Find(&todos)
 
-	todos := db.Find(&models.Todo{})
-	c.IndentedJSON(http.StatusOK, todos)
+	c.JSON(http.StatusOK, gin.H{"data": todos})
 }
 
 func getById(c *gin.Context) {
