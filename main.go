@@ -14,11 +14,11 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	database, err := db.Initialize()
+	db, err := db.Initialize()
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
-	defer database.DB()
+	defer db.DB()
 
 	router := gin.Default()
 	router.GET("/todos", get)
@@ -30,26 +30,29 @@ func main() {
 }
 
 func get(c *gin.Context) {
-	todos := models.GetTodos()
+	db, err := db.Initialize()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+
+	todos := db.Find(&models.Todo{})
 	c.IndentedJSON(http.StatusOK, todos)
 }
 
 func getById(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	var todo models.Todo
 
+	db, err := db.Initialize()
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		log.Fatalf("Could not connect to database: %v", err)
 	}
 
-	todos := models.GetTodos()
-	for _, t := range todos {
-		if t.Id == id {
-			c.IndentedJSON(http.StatusFound, t)
-			return
-		}
+	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
 
+	c.JSON(http.StatusOK, gin.H{"data": todo})
 }
 
 func post(c *gin.Context) {
