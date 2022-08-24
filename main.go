@@ -56,15 +56,22 @@ func getById(c *gin.Context) {
 }
 
 func post(c *gin.Context) {
+
+	db, err := db.Initialize()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+
 	var newTodo models.Todo
-	var todos = models.GetTodos()
 
 	if err := c.BindJSON(&newTodo); err != nil {
 		return
 	}
 
-	_ = append(todos, newTodo)
-	c.IndentedJSON(http.StatusCreated, newTodo)
+	todo := models.Todo{Value: newTodo.Value, IsComplete: newTodo.IsComplete}
+	db.Create(&todo)
+
+	c.JSON(http.StatusOK, gin.H{"data": todo})
 }
 
 func put(c *gin.Context) {

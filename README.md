@@ -17,7 +17,7 @@ curl http://localhost:8080/todos \
     --include \
     --header "Content-Type: application/json" \
     --request "POST" \
-    --data '{"id": 4,"name": "A new TODO","description": "Some more details about TODO","isComplete": false}'
+    --data '{"value": "A new TODO", "isComplete": false}'
 ```
 
 To PUT a todo, run: 
