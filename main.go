@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"todo-list-golang/db"
 	"todo-list-golang/models"
 
@@ -25,7 +24,7 @@ func main() {
 	router.GET("/todos/:id", getById)
 	router.PUT("/todos/:id", put)
 	router.POST("/todos", post)
-	router.DELETE("/todos/:id", delete)
+	// router.DELETE("/todos/:id", delete)
 	router.Run()
 }
 
@@ -75,44 +74,42 @@ func post(c *gin.Context) {
 }
 
 func put(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-
+	db, err := db.Initialize()
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+
+	var todo models.Todo
+	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
 	}
 
 	var updatedTodo models.Todo
 
-	todos := models.GetTodos()
-	for _, t := range todos {
-		if t.Id == id {
-			c.IndentedJSON(http.StatusOK, updatedTodo)
-			return
-		}
+	if err := c.BindJSON(&updatedTodo); err != nil {
+		return
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
+
+	db.Updates(updatedTodo)
+
+	c.JSON(http.StatusOK, gin.H{"data": updatedTodo})
 }
 
-func delete(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+// func delete(c *gin.Context) {
+// 	id, err := strconv.Atoi(c.Param("id"))
 
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
-	}
+// 	if err != nil {
+// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+// 	}
 
-	todos := models.GetTodos()
+// 	todos := models.GetTodos()
 
-	for i := len(todos) - 1; i >= 0; i-- {
-		if todos[i].Id == id {
-			todos = append(todos[:i], todos[i+1:]...)
-		}
-	}
+// 	for i := len(todos) - 1; i >= 0; i-- {
+// 		if todos[i].Id == id {
+// 			todos = append(todos[:i], todos[i+1:]...)
+// 		}
+// 	}
 
-	c.IndentedJSON(http.StatusOK, todos)
-
-	// if len(todos) < length {
-	// 	c.IndentedJSON(http.StatusOK, todos)
-	// }
-
-	// c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
-}
+// 	c.IndentedJSON(http.StatusOK, todos)
+// }
