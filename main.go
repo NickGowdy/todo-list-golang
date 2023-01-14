@@ -13,19 +13,27 @@ import (
 func main() {
 	godotenv.Load(".env")
 
+	SetupDb()
+	router := SetupRouter()
+	router.Run()
+}
+
+func SetupDb() {
 	db, err := db.Initialize()
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
 	defer db.DB()
+}
 
+func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/todos", get)
 	router.GET("/todos/:id", getById)
 	router.PUT("/todos/:id", put)
 	router.POST("/todos", post)
 	router.DELETE("/todos/:id", delete)
-	router.Run()
+	return router
 }
 
 func get(c *gin.Context) {
@@ -36,7 +44,7 @@ func get(c *gin.Context) {
 	var todos []models.Todo
 	db.Find(&todos)
 
-	c.JSON(http.StatusOK, gin.H{"data": todos})
+	c.JSON(http.StatusOK, todos)
 }
 
 func getById(c *gin.Context) {
@@ -52,7 +60,7 @@ func getById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": todo})
+	c.JSON(http.StatusOK, todo)
 }
 
 func post(c *gin.Context) {
@@ -71,7 +79,7 @@ func post(c *gin.Context) {
 	todo := models.Todo{Value: newTodo.Value, IsComplete: newTodo.IsComplete}
 	db.Create(&todo)
 
-	c.JSON(http.StatusOK, gin.H{"data": todo})
+	c.JSON(http.StatusOK, todo)
 }
 
 func put(c *gin.Context) {
@@ -94,7 +102,7 @@ func put(c *gin.Context) {
 
 	db.Updates(updatedTodo)
 
-	c.JSON(http.StatusOK, gin.H{"data": updatedTodo})
+	c.JSON(http.StatusOK, updatedTodo)
 }
 
 func delete(c *gin.Context) {
@@ -110,5 +118,5 @@ func delete(c *gin.Context) {
 	}
 
 	db.Delete(todo)
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	c.JSON(http.StatusOK, true)
 }

@@ -3,23 +3,43 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"todo-list-golang/models"
+
+	"github.com/joho/godotenv"
 )
 
-func InsertGetDeleteTodosTest(t *testing.T) {
-	todoToInsert := models.Todo{Value: "Nick's todo", IsComplete: false}
-	body, _ := json.Marshal(todoToInsert)
-	_, err := http.NewRequest(http.MethodPost, "/todos", bytes.NewReader(body))
+func TestInsertGetDeleteTodos(t *testing.T) {
+	godotenv.Load(".env")
+	SetupDb()
+	router := SetupRouter()
 
-	if err != nil {
-		fmt.Printf("error should be nil, but was: %v", err)
+	todoToInsert := models.Todo{
+		Id:         0,
+		Value:      "Nick's todo",
+		IsComplete: false,
+	}
+	body, _ := json.Marshal(todoToInsert)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/todos", bytes.NewReader(body))
+
+	router.ServeHTTP(w, req)
+
+	if w.Result().StatusCode != 200 {
+		t.Errorf("StatusCode should be 200 but is: %v", w.Result().StatusCode)
 	}
 
-	res := httptest.NewRecorder()
-	fmt.Println(res)
+	w = httptest.NewRecorder()
+	req, _ = http.NewRequest(http.MethodGet, "/todos", nil)
+	router.ServeHTTP(w, req)
 
+	var todos []models.Todo
+	json.NewDecoder(w.Body).Decode(&todos)
+
+	if len(todos) == 0 {
+		t.Errorf("todos should not be empty but is: %v", len(todos))
+	}
 }
