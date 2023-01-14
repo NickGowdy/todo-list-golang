@@ -17,7 +17,7 @@ curl http://localhost:8080/todos \
     --include \
     --header "Content-Type: application/json" \
     --request "POST" \
-    --data '{"id": 4,"name": "A new TODO","description": "Some more details about TODO","isComplete": false}'
+    --data '{"value": "A new TODO", "isComplete": false}'
 ```
 
 To PUT a todo, run: 
@@ -27,7 +27,7 @@ curl http://localhost:8080/todos/1 \
     --include \
     --header "Content-Type: application/json" \
     --request "PUT" \
-    --data '{"name": "A new TODO","description": "Some more details about TODO","isComplete": true}'
+    --data '{"id": 1, "value": "A new TODO 1111","isComplete": true}'
 ```
 
 To delete a todo, run:

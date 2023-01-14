@@ -28,7 +28,7 @@ func Initialize() (*gorm.DB, error) {
 		log.Fatalln(err)
 	}
 
-	db.Debug().AutoMigrate(&models.Todo{})
+	db.AutoMigrate(&models.Todo{})
 
 	return db, err
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"todo-list-golang/db"
 	"todo-list-golang/models"
 
@@ -14,11 +13,11 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	database, err := db.Initialize()
+	db, err := db.Initialize()
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
-	defer database.DB()
+	defer db.DB()
 
 	router := gin.Default()
 	router.GET("/todos", get)
@@ -30,79 +29,86 @@ func main() {
 }
 
 func get(c *gin.Context) {
-	todos := models.GetTodos()
-	c.IndentedJSON(http.StatusOK, todos)
+	db, err := db.Initialize()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+	var todos []models.Todo
+	db.Find(&todos)
+
+	c.JSON(http.StatusOK, gin.H{"data": todos})
 }
 
 func getById(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	var todo models.Todo
 
+	db, err := db.Initialize()
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		log.Fatalf("Could not connect to database: %v", err)
 	}
 
-	todos := models.GetTodos()
-	for _, t := range todos {
-		if t.Id == id {
-			c.IndentedJSON(http.StatusFound, t)
-			return
-		}
+	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
 
+	c.JSON(http.StatusOK, gin.H{"data": todo})
 }
 
 func post(c *gin.Context) {
+
+	db, err := db.Initialize()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+
 	var newTodo models.Todo
-	var todos = models.GetTodos()
 
 	if err := c.BindJSON(&newTodo); err != nil {
 		return
 	}
 
-	_ = append(todos, newTodo)
-	c.IndentedJSON(http.StatusCreated, newTodo)
+	todo := models.Todo{Value: newTodo.Value, IsComplete: newTodo.IsComplete}
+	db.Create(&todo)
+
+	c.JSON(http.StatusOK, gin.H{"data": todo})
 }
 
 func put(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-
+	db, err := db.Initialize()
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+
+	var todo models.Todo
+	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
 	}
 
 	var updatedTodo models.Todo
 
-	todos := models.GetTodos()
-	for _, t := range todos {
-		if t.Id == id {
-			c.IndentedJSON(http.StatusOK, updatedTodo)
-			return
-		}
+	if err := c.BindJSON(&updatedTodo); err != nil {
+		return
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
+
+	db.Updates(updatedTodo)
+
+	c.JSON(http.StatusOK, gin.H{"data": updatedTodo})
 }
 
 func delete(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-
+	db, err := db.Initialize()
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		log.Fatalf("Could not connect to database: %v", err)
 	}
 
-	todos := models.GetTodos()
-
-	for i := len(todos) - 1; i >= 0; i-- {
-		if todos[i].Id == id {
-			todos = append(todos[:i], todos[i+1:]...)
-		}
+	var todo models.Todo
+	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
 	}
 
-	c.IndentedJSON(http.StatusOK, todos)
-
-	// if len(todos) < length {
-	// 	c.IndentedJSON(http.StatusOK, todos)
-	// }
-
-	// c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+	db.Delete(todo)
+	c.JSON(http.StatusOK, gin.H{"data": true})
 }
