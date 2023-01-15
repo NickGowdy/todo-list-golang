@@ -1,4 +1,8 @@
-# todo-list-golang
+# TODO list API written with Golang, Gin and Gorm
+
+To run this API you will need: [Docker](https://docker.com).
+
+Once this is installed use the command: `docker compose up -d` to start up the API and it's Postgres database.
 
 To GET todos, run: 
 ```
