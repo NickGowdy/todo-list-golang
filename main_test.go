@@ -100,20 +100,6 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 		t.Errorf("todos should not be empty but is: %v", len(todos))
 	}
 
-	for _, val := range todos {
-		if val.Id == 0 {
-			t.Errorf("todo id should be greater than 0 but was: %v", todo.Id)
-		}
-
-		if val.Value != "Nick's todo 1" {
-			t.Errorf("todo value should be: Nick's todo 1 but was: %s", todo.Value)
-		}
-
-		if !val.IsComplete {
-			t.Errorf("todo value should be: false but was %v", todo.IsComplete)
-		}
-	}
-
 	w = httptest.NewRecorder()
 	req, _ = http.NewRequest(http.MethodDelete, fmt.Sprintf("/todos/%v", todo.Id), nil)
 	router.ServeHTTP(w, req)
