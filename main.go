@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -45,6 +46,7 @@ func getById(c *gin.Context) {
 func post(c *gin.Context) {
 	var newTodo Todo
 	if err := c.BindJSON(&newTodo); err != nil {
+		log.Fatal(err)
 		return
 	}
 
@@ -62,6 +64,7 @@ func put(c *gin.Context) {
 
 	var updatedTodo Todo
 	if err := c.BindJSON(&updatedTodo); err != nil {
+		log.Fatal(err)
 		return
 	}
 
