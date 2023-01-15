@@ -22,18 +22,16 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 		Value:      "Nick's todo",
 		IsComplete: false,
 	}
-	body, _ := json.Marshal(todoToInsert)
 
+	body, _ := json.Marshal(todoToInsert)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodPost, "/todos", bytes.NewReader(body))
-
 	router.ServeHTTP(w, req)
+	todo := decodeTodo(w)
 
 	if w.Result().StatusCode != 200 {
 		t.Errorf("StatusCode should be 200 but is: %v", w.Result().StatusCode)
 	}
-
-	todo := decodeTodo(w)
 
 	if todo.Id == 0 {
 		t.Errorf("todo id should be greater than 0 but was: %v", todo.Id)
@@ -50,12 +48,11 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 	w = httptest.NewRecorder()
 	req, _ = http.NewRequest(http.MethodGet, fmt.Sprintf("/todos/%v", todo.Id), nil)
 	router.ServeHTTP(w, req)
+	todo = decodeTodo(w)
 
 	if w.Result().StatusCode != 200 {
 		t.Errorf("StatusCode should be 200 but is: %v", w.Result().StatusCode)
 	}
-
-	todo = decodeTodo(w)
 
 	if todo.Id == 0 {
 		t.Errorf("todo id should be greater than 0 but was: %v", todo.Id)
@@ -69,10 +66,37 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 		t.Errorf("todo value should be: false but was %v", todo.IsComplete)
 	}
 
+	todoToUpdate := models.Todo{
+		Id:         todo.Id,
+		Value:      "Nick's todo 1",
+		IsComplete: true,
+	}
+
+	body, _ = json.Marshal(todoToUpdate)
+	w = httptest.NewRecorder()
+	req, _ = http.NewRequest(http.MethodPut, fmt.Sprintf("/todos/%v", todo.Id), bytes.NewReader(body))
+	router.ServeHTTP(w, req)
+	todo = decodeTodo(w)
+
+	if w.Result().StatusCode != 200 {
+		t.Errorf("StatusCode should be 200 but is: %v", w.Result().StatusCode)
+	}
+
+	if todo.Id != todoToUpdate.Id {
+		t.Errorf("todo id should be the same as %v but was %v", todo.Id, todoToUpdate.Id)
+	}
+
+	if todo.Value != "Nick's todo 1" {
+		t.Errorf("todo value should be: Nick's todo 1 but was: %s", todo.Value)
+	}
+
+	if !todo.IsComplete {
+		t.Errorf("todo value should be: true but was %v", todo.IsComplete)
+	}
+
 	w = httptest.NewRecorder()
 	req, _ = http.NewRequest(http.MethodGet, "/todos", nil)
 	router.ServeHTTP(w, req)
-
 	var todos []models.Todo
 	json.NewDecoder(w.Body).Decode(&todos)
 
@@ -85,11 +109,11 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 			t.Errorf("todo id should be greater than 0 but was: %v", todo.Id)
 		}
 
-		if val.Value != "Nick's todo" {
-			t.Errorf("todo value should be: Nick's todo but was: %s", todo.Value)
+		if val.Value != "Nick's todo 1" {
+			t.Errorf("todo value should be: Nick's todo 1 but was: %s", todo.Value)
 		}
 
-		if val.IsComplete != false {
+		if !val.IsComplete {
 			t.Errorf("todo value should be: false but was %v", todo.IsComplete)
 		}
 	}
