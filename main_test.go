@@ -129,6 +129,55 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 	}
 }
 
+func TestGetBadRequest(t *testing.T) {
+	godotenv.Load(".env")
+	SetupDb()
+	router := SetupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/todos/string", nil)
+	router.ServeHTTP(w, req)
+
+	if w.Result().StatusCode != 400 {
+		t.Errorf("StatusCode should be 400 but is: %v", w.Result().StatusCode)
+	}
+}
+
+func TestDeleteCantFindRecord(t *testing.T) {
+	godotenv.Load(".env")
+	SetupDb()
+	router := SetupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodDelete, "/todos/100000", nil)
+	router.ServeHTTP(w, req)
+
+	if w.Result().StatusCode != 400 {
+		t.Errorf("StatusCode should be 400 but is: %v", w.Result().StatusCode)
+	}
+}
+
+func TestPutNonMatchingId(t *testing.T) {
+	godotenv.Load(".env")
+	SetupDb()
+	router := SetupRouter()
+
+	todoToUpdate := models.Todo{
+		Id:         999999,
+		Value:      "Nick's todo 1",
+		IsComplete: true,
+	}
+
+	body, _ := json.Marshal(todoToUpdate)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPut, "/todos/1", bytes.NewReader(body))
+	router.ServeHTTP(w, req)
+
+	if w.Result().StatusCode != 400 {
+		t.Errorf("StatusCode should be 400 but is: %v", w.Result().StatusCode)
+	}
+}
+
 func decodeTodo(w *httptest.ResponseRecorder) models.Todo {
 	var todo models.Todo
 	json.NewDecoder(w.Body).Decode(&todo)
