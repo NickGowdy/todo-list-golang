@@ -7,17 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"todo-list-golang/models"
-
-	"github.com/joho/godotenv"
 )
 
 func TestInsertGetDeleteTodos(t *testing.T) {
-	godotenv.Load(".env")
-	SetupDb()
 	router := SetupRouter()
+	main()
 
-	todoToInsert := models.Todo{
+	todoToInsert := Todo{
 		Id:         0,
 		Value:      "Nick's todo",
 		IsComplete: false,
@@ -66,7 +62,7 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 		t.Errorf("todo value should be: false but was %v", todo.IsComplete)
 	}
 
-	todoToUpdate := models.Todo{
+	todoToUpdate := Todo{
 		Id:         todo.Id,
 		Value:      "Nick's todo 1",
 		IsComplete: true,
@@ -97,7 +93,7 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 	w = httptest.NewRecorder()
 	req, _ = http.NewRequest(http.MethodGet, "/todos", nil)
 	router.ServeHTTP(w, req)
-	var todos []models.Todo
+	var todos []Todo
 	json.NewDecoder(w.Body).Decode(&todos)
 
 	if len(todos) == 0 {
@@ -130,9 +126,8 @@ func TestInsertGetDeleteTodos(t *testing.T) {
 }
 
 func TestGetBadRequest(t *testing.T) {
-	godotenv.Load(".env")
-	SetupDb()
 	router := SetupRouter()
+	main()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/todos/string", nil)
@@ -144,9 +139,8 @@ func TestGetBadRequest(t *testing.T) {
 }
 
 func TestDeleteCantFindRecord(t *testing.T) {
-	godotenv.Load(".env")
-	SetupDb()
 	router := SetupRouter()
+	main()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodDelete, "/todos/100000", nil)
@@ -158,11 +152,10 @@ func TestDeleteCantFindRecord(t *testing.T) {
 }
 
 func TestPutNonMatchingId(t *testing.T) {
-	godotenv.Load(".env")
-	SetupDb()
 	router := SetupRouter()
+	main()
 
-	todoToUpdate := models.Todo{
+	todoToUpdate := Todo{
 		Id:         999999,
 		Value:      "Nick's todo 1",
 		IsComplete: true,
@@ -178,8 +171,8 @@ func TestPutNonMatchingId(t *testing.T) {
 	}
 }
 
-func decodeTodo(w *httptest.ResponseRecorder) models.Todo {
-	var todo models.Todo
+func decodeTodo(w *httptest.ResponseRecorder) Todo {
+	var todo Todo
 	json.NewDecoder(w.Body).Decode(&todo)
 	return todo
 }

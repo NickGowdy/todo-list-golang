@@ -1,17 +1,15 @@
-package db
+package main
 
 import (
 	"fmt"
 	"log"
 	"os"
-	"todo-list-golang/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func Initialize() (*gorm.DB, error) {
-
+func Setup() *gorm.DB {
 	username, password, database, HOST, PORT :=
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
@@ -28,7 +26,6 @@ func Initialize() (*gorm.DB, error) {
 		log.Fatalln(err)
 	}
 
-	db.AutoMigrate(&models.Todo{})
-
-	return db, err
+	db.AutoMigrate(&Todo{})
+	return db
 }

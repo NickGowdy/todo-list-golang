@@ -1,4 +1,4 @@
-package models
+package main
 
 type Todo struct {
 	Id         int    `gorm:"primaryKey;autoIncrement" json:"id"`

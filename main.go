@@ -1,29 +1,20 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"todo-list-golang/db"
-	"todo-list-golang/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
+
+var db *gorm.DB
 
 func main() {
 	godotenv.Load(".env")
-
-	SetupDb()
+	db = Setup()
 	router := SetupRouter()
 	router.Run()
-}
-
-func SetupDb() {
-	db, err := db.Initialize()
-	if err != nil {
-		log.Fatalf("Could not set up database: %v", err)
-	}
-	defer db.DB()
 }
 
 func SetupRouter() *gin.Engine {
@@ -37,81 +28,49 @@ func SetupRouter() *gin.Engine {
 }
 
 func get(c *gin.Context) {
-	db, err := db.Initialize()
-	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
-	}
-	var todos []models.Todo
+	var todos []Todo
 	db.Find(&todos)
-
 	c.JSON(http.StatusOK, todos)
 }
 
 func getById(c *gin.Context) {
-	var todo models.Todo
-
-	db, err := db.Initialize()
-	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
-	}
-
+	var todo Todo
 	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
 		return
 	}
-
 	c.JSON(http.StatusOK, todo)
 }
 
 func post(c *gin.Context) {
-
-	db, err := db.Initialize()
-	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
-	}
-
-	var newTodo models.Todo
-
+	var newTodo Todo
 	if err := c.BindJSON(&newTodo); err != nil {
 		return
 	}
 
-	todo := models.Todo{Value: newTodo.Value, IsComplete: newTodo.IsComplete}
+	todo := Todo{Value: newTodo.Value, IsComplete: newTodo.IsComplete}
 	db.Create(&todo)
-
 	c.JSON(http.StatusOK, todo)
 }
 
 func put(c *gin.Context) {
-	db, err := db.Initialize()
-	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
-	}
-
-	var todo models.Todo
+	var todo Todo
 	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
 		return
 	}
 
-	var updatedTodo models.Todo
-
+	var updatedTodo Todo
 	if err := c.BindJSON(&updatedTodo); err != nil {
 		return
 	}
 
 	db.Updates(updatedTodo)
-
 	c.JSON(http.StatusOK, updatedTodo)
 }
 
 func delete(c *gin.Context) {
-	db, err := db.Initialize()
-	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
-	}
-
-	var todo models.Todo
+	var todo Todo
 	if err := db.Where("id = ?", c.Param("id")).First(&todo).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
 		return
